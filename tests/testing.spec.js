@@ -1,7 +1,18 @@
-const {test} = require('../fixture/basefixture');
+const { test, expect } = require('@playwright/test');
 
+test('Validate all broken links', async ({ page, request }) => {
+  await page.goto('https://example.com');
 
-test('test' , async({page , manager})=>{
+  const links = await page.locator('a').evaluateAll(elements =>
+    elements
+      .map(el => el.href)
+      .filter(href => href && href.startsWith('http'))
+  );
 
-    await manager.
-})
+  for (const link of links) {
+    const response = await request.get(link);
+    console.log(`${link} --> ${response.status()}`);
+    expect(response.status(), `${link} is broken`).toBeLessThan(400);
+  }
+});
+
